@@ -1,3 +1,27 @@
+:root {
+    --color-dark-blue: #01144F;
+    --color-light-blue: #7dc1f8;
+    --color-text-light: #ffffff;
+    --color-text-dark: #2E2E2E;
+    --color-orange: #EC6B34;
+}
+
+
 body {
-    background-color: skyblue;
+    background-color: var(--color-light-blue);
+}
+
+
+h1 {
+    text-align: center;
+    margin-top: 150px;
+    font-family: 'Arial', sans-serif;
+    color: var(--color-dark-blue);
+}
+
+.logo {
+    display: block;
+    margin: 30px auto;
+    width: 500px;
+    height: auto;
 }

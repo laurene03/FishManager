@@ -106,25 +106,37 @@ class Binome
         return $this->releves;
     }
 
-    public function addRelefe(Releve $relefe): static
+    public function addreleve(Releve $releve): static
     {
-        if (!$this->releves->contains($relefe)) {
-            $this->releves->add($relefe);
-            $relefe->setBinome($this);
+        if (!$this->releves->contains($releve)) {
+            $this->releves->add($releve);
+            $releve->setBinome($this);
         }
 
         return $this;
     }
 
-    public function removeRelefe(Releve $relefe): static
+    public function removereleve(Releve $releve): static
     {
-        if ($this->releves->removeElement($relefe)) {
+        if ($this->releves->removeElement($releve)) {
             // set the owning side to null (unless already changed)
-            if ($relefe->getBinome() === $this) {
-                $relefe->setBinome(null);
+            if ($releve->getBinome() === $this) {
+                $releve->setBinome(null);
             }
         }
 
         return $this;
+    }
+    public function __toString(): string
+    {
+        $names = [];
+        if ($this->etudiant1) {
+            $names[] = $this->etudiant1->getPrenom() . ' ' . $this->etudiant1->getNom();
+        }
+        if ($this->etudiant2) {
+            $names[] = $this->etudiant2->getPrenom() . ' ' . $this->etudiant2->getNom();
+        }
+
+        return empty($names) ? 'Binome ' . $this->id : implode(' & ', $names);
     }
 }

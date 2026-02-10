@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion Aquarium</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-orange': '#D95D39',
+                        'brand-bg': '#003B73',
+                    },
+                    fontFamily: {
+                        sans: ['Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #005aa7 0%, #002855 100%);
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- STYLE DES POISSONS --- */
+        #fish-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Permet de cliquer à travers les poissons */
+            z-index: 1; /* Niveau 1 : Au-dessus du fond */
+            overflow: hidden;
+        }
+
+        .fish {
+            position: absolute;
+            width: 27px;
+            height: 23px;
+            background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABsAAAC4CAIAAACdPgBCAAAABGdBTUEAAK/INwWK6QAAAAZ0Uk5TAAAAAAAAbqYHkQAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAvxJREFUeNrtmb9LHEEUxwcTkSCxEAKxCXZWpomCBklhI5IgBEJQkSMWhxZyFgbsAiEi2GhzFkpAS9ughMD1ooVCuqRIF/I/RITx7b7duf0xv3Z2jlPvPR54t7fzYe7W3Q9fHmP3qo7XBv9t9V98GthfHlp6O1qKxS+7+dEjfzgeEXm9tyxxvdoV4eyI/7/9NLF4YoMm4lX9VEls4nB38Qb558e81ofQAsTGwQP+62GKFW9QQ7yufU8TYT/4F1gCkWQhDnrlKa+OAzR16YZ+5IgCh4vrvV/7n2E3WYjLEf/OzsuJvNEjVgagsM7Oz4PXeLzWh7igP8xEqxYqAXHkMEv8Mj0dfLD0HBsoO2y3whYjYnw8woXEoBcqETG/x+AzXBOeBBTATbBXETE8GDSCRKtwuMc/H9/hMngBLX5HfCs+zbcSOjc5KRbru7E1Bb138LL5O6quNUDhPFygaTinuv3CfK31XDiCDaz3q2OZJQYilkAkW4pT3DOyws1Cr58MI+v17ITmfDMRC3CeiYWgtsS7U/BMBBf6MRcLvfp744k3XDkRxg/z5AFvam3ivBCzOkzbdf6N5F60kLVarXmi7oaxsWuGqHtMWNo142sl0c2ualk72VWuVlbCrmr9u9pV+ZWd7WoQoYNdDSJ0s6tZhPDoL2pXswgR6lmtLFZ229TK7EVoTyxQLYGyUF5+tCVw3kTIYhf6Uyv3SkyaSxDLuTCtGs02Df+MEhfG5pK60HDDFHWh4aa2cWEmu5rUWtCFuoejgwuVImSuLtQpwdGFmq/s5kKztoq60DER6l1olQgXN0ekFJW/rLQFUHsX2oqQxS70nwg9ixCqJc5qCbQl5Tka3qqkmcdR0qSkKVZR0kzukZImJc0OT5p3p2hQKj2/4wel4iL4GZQm5640KKVBKQ1KFUWD0jbVfR6U5nFl1ZoevVJ8pfhK8ZXiq/IupPhK8dVz0TC3NI6GuTTMpWEuDXOlUBrmdvIwl9JwaRylYUrDlIYpDauglIbbmYZvACQnkZaK+XLSAAAARXpUWHRTb2Z0d2FyZQAAeNpz0FDW9MxNTE/1TUzPTM5WMNEz0DNVsLTQNzDVNzBUSC7KLC6pdCiuzC1ILMlMztfLL0oHAHyiD/vAl2ahAAAAM3pUWHRTaWduYXR1cmUAAHjas0hOS0lOMjC2NDKwTDEwsjBMNDdLTTKysEy2NExKMTcBAJQkCMet5Z9AAAAAAElFTkSuQmCC);
+            /* Animation du sprite (nageoires qui bougent) */
+            animation: swimSprite 0.8s steps(8) infinite; 
+        }
+
+        /* Animation des nageoires */
+        @keyframes swimSprite {
+            100% { background-position: 0px -184px; }
+        }
+
+        /* CORRECTION ICI : Inversion des transformations */
+        .swim-left { transform: scaleX(-1); } /* Miroir : Poisson regarde à gauche */
+        .swim-right { transform: scaleX(1); } /* Normal : Poisson regarde à droite */
+
+    </style>
+</head>
+<body class="flex items-center justify-center p-6 h-screen text-gray-800">
+
+    <div id="fish-container"></div>
+
+    <div class="flex w-full h-full max-w-7xl gap-6 relative z-10">
+
+        <aside class="w-64 bg-brand-orange rounded-3xl flex flex-col justify-center py-10 px-6 shadow-2xl text-white shrink-0">
+            <nav class="flex flex-col space-y-12">
+                <a href="#" id="nav-btn-home" class="flex items-center space-x-4 opacity-100 font-bold text-xl hover:opacity-80 transition">
+                    <div class="w-10 h-10 border-2 border-white rounded-lg flex items-center justify-center"><i class="fa-solid fa-house"></i></div>
+                    <span>Accueil</span>
+                </a>
+                <a href="#" id="nav-btn-releve" class="flex items-center space-x-4 opacity-70 hover:opacity-100 transition text-lg">
+                    <div class="w-10 h-10 border-2 border-white/50 rounded-lg flex items-center justify-center"><i class="fa-solid fa-clipboard-list"></i></div>
+                    <span>Relevé</span>
+                </a>
+                <a href="#" class="flex items-center space-x-4 opacity-70 hover:opacity-100 transition text-lg">
+                    <div class="w-10 h-10 border-2 border-white/50 rounded-lg flex items-center justify-center"><i class="fa-regular fa-calendar"></i></div>
+                    <span>Calendrier</span>
+                </a>
+                <a href="#" class="flex items-center space-x-4 opacity-70 hover:opacity-100 transition text-lg">
+                    <div class="w-10 h-10 border-2 border-white/50 rounded-full flex items-center justify-center"><i class="fa-solid fa-user-group"></i></div>
+                    <span>Binôme</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="flex-1 h-full relative overflow-hidden">
+            <!-- VIEW HOME -->
+            <div id="view-home" class="grid grid-cols-3 grid-rows-2 gap-6 h-full transition-opacity duration-300">
+                <div class="col-span-2 bg-white rounded-3xl p-6 shadow-xl flex flex-col relative">
+                    <div class="flex space-x-1 bg-orange-300/20 p-1 rounded-t-xl absolute top-0 left-6 right-6 -mt-0">
+                        <div id="tab-durete" class="bg-white px-4 py-2 rounded-t-lg text-brand-orange font-bold text-sm border-t border-l border-r border-gray-200 flex items-center gap-2 cursor-pointer transition-colors" onclick="app.switchTab('durete')"><i class="fa-solid fa-chart-line"></i> Dureté</div>
+                        <div id="tab-ph" class="px-4 py-2 text-white font-medium text-sm bg-brand-orange hover:bg-orange-600 cursor-pointer rounded-t-lg flex items-center gap-2 transition-colors" onclick="app.switchTab('ph')"><i class="fa-solid fa-droplet"></i> pH</div>
+                        <div id="tab-temp" class="px-4 py-2 text-white font-medium text-sm bg-brand-orange hover:bg-orange-600 cursor-pointer rounded-t-lg flex items-center gap-2 transition-colors" onclick="app.switchTab('temp')"><i class="fa-solid fa-temperature-half"></i> Temp.</div>
+                         <div class="px-4 py-2 text-white font-medium text-sm bg-brand-orange hover:bg-orange-600 cursor-pointer rounded-t-lg flex items-center gap-2"><i class="fa-solid fa-cloud"></i> CO2</div>
+                         <div class="px-4 py-2 text-white font-medium text-sm bg-brand-orange hover:bg-orange-600 cursor-pointer rounded-t-lg flex items-center gap-2"><i class="fa-solid fa-recycle"></i> Azote</div>
+                    </div>
+                    <div class="mt-8 flex-1 w-full relative">
+                        <div class="flex justify-end mb-2">
+                            <select class="text-xs bg-gray-100 border border-gray-300 rounded-full px-3 py-1 outline-none text-gray-600"><option>Ce mois</option><option>Cette semaine</option></select>
+                        </div>
+                        
+                        <!-- Charts Container -->
+                        <div class="relative h-64 w-full">
+                            <canvas id="waterChart"></canvas>
+                            <div id="chart-ph" class="hidden w-full h-full"></div>
+                            <div id="chart-temp" class="hidden w-full h-full"></div>
+                        </div>
+
+                        <div id="chart-legend" class="flex justify-end gap-4 mt-2 text-xs font-bold">
+                            <div class="flex items-center gap-1"><span class="w-4 h-1 bg-green-500 rounded-full"></span> GH</div>
+                            <div class="flex items-center gap-1"><span class="w-4 h-1 bg-orange-500 rounded-full"></span> KH</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-span-1 bg-white rounded-3xl p-6 shadow-xl flex flex-col justify-between">
+                    <div>
+                            <div class="flex items-center gap-3 mb-4"><i class="fa-solid fa-clipboard-list text-3xl text-brand-orange"></i><h2 class="text-xl font-bold text-brand-orange">Nourrissage</h2></div>
+                        <div class="space-y-4 text-sm">
+                            <div><p class="font-bold text-gray-800">Dernier nourrissage :</p><p class="text-gray-500">22 novembre 2025</p></div>
+                            <div><p class="font-bold text-gray-800">Nourrissage à venir :</p><p class="text-gray-500">22 novembre 2025</p></div>
+                        </div>
+                    </div>
+                    <button class="w-full border border-gray-300 rounded-full py-2 px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 transition shadow-sm mt-4">Nourrir les poissons !</button>
+                </div>
+
+                <div class="col-span-2 bg-white rounded-3xl p-6 shadow-xl flex">
+                    <div class="w-1/3 flex flex-col justify-between border-r border-gray-100 pr-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-brand-orange mb-4">Calendrier</h2>
+                            <div class="flex items-start gap-2 mb-2"><i class="fa-regular fa-calendar text-2xl text-brand-orange"></i><div><p class="text-xs font-bold text-brand-orange">Responsables :</p><p class="text-xs text-gray-500">Albertine et Roberto</p></div></div>
+                        </div>
+                        <button class="border border-gray-300 rounded-full py-2 px-6 text-sm text-gray-600 hover:bg-gray-50 w-max">Voir plus</button>
+                    </div>
+                    <div class="w-2/3 pl-6">
+                        <div class="text-center font-bold text-2xl mb-4 text-gray-800">Novembre</div>
+                        <div class="grid grid-cols-7 gap-2 text-center text-sm font-medium text-gray-700">
+                            <div class="text-gray-400 text-xs">Lu</div><div class="text-gray-400 text-xs">Ma</div><div class="text-gray-400 text-xs">Me</div><div class="text-gray-400 text-xs">Je</div><div class="text-gray-400 text-xs">Ve</div><div class="text-gray-400 text-xs text-red-500">Sa</div><div class="text-gray-400 text-xs text-red-500">Di</div>
+                            <div></div> <div></div> <div></div> <div></div> <div>1</div> <div class="text-red-500">2</div> <div class="text-red-500">3</div>
+                            <div>4</div> <div>5</div> <div>6</div> <div>7</div> <div>8</div> <div class="text-red-500">9</div> <div class="text-red-500">10</div>
+                            <div>11</div> <div>12</div> <div>13</div> <div>14</div> <div>15</div> <div class="text-red-500">16</div> <div class="text-red-500">17</div>
+                            <div>18</div> <div>19</div> <div>20</div> <div class="border-2 border-gray-800 rounded text-gray-900 font-bold">21</div> <div>22</div> <div class="text-red-500">23</div> <div class="text-red-500">24</div>
+                            <div>25</div> <div>26</div> <div>27</div> <div>28</div> <div>29</div> <div class="text-red-500">30</div> <div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-span-1 bg-white rounded-3xl p-6 shadow-xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center gap-3 mb-4"><i class="fa-solid fa-clipboard text-3xl text-brand-orange"></i><h2 class="text-xl font-bold text-brand-orange">Remarques</h2></div>
+                        <div class="mb-2 text-sm font-bold text-gray-800">Dernière remarque :</div>
+                        <div class="bg-gray-200 rounded-xl p-4 text-sm text-gray-700">Il faudrait nettoyer l'aquarium !</div>
+                    </div>
+                     <button class="mx-auto border border-gray-300 rounded-full py-2 px-8 text-sm text-gray-600 hover:bg-gray-50 mt-4 w-max">Voir plus</button>
+                </div>
+            </div>
+
+            <!-- VIEW RELEVE -->
+            <div id="view-releve" class="hidden h-full w-full bg-white rounded-3xl p-10 shadow-xl flex flex-col items-center justify-center relative">
+                <div class="absolute top-10 left-10">
+                     <h2 class="text-3xl font-bold text-brand-orange mb-2"><i class="fa-solid fa-flask"></i> Nouveau Relevé</h2>
+                     <p class="text-gray-500">Saisissez les paramètres de l'eau du jour.</p>
+                </div>
+
+                {{ form_start(form, {'attr': {'id': 'releve-form', 'class': 'w-full max-w-lg space-y-8 mt-10'}}) }}
+                    
+                    {% for message in app.flashes('success') %}
+                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                            <strong class="font-bold">Succès!</strong>
+                            <span class="block sm:inline">{{ message }}</span>
+                        </div>
+                    {% endfor %}
+
+                    <div>
+                        {{ form_label(form.date, null, {'label_attr': {'class': 'block text-sm font-bold text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.date, {'attr': {'class': 'w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition'}}) }}
+                        {{ form_errors(form.date, {'attr': {'class': 'text-red-500 text-xs italic'}}) }}
+                    </div>
+
+                    <div>
+                        {{ form_label(form.binome, null, {'label_attr': {'class': 'block text-sm font-bold text-gray-700 mb-2'}}) }}
+                        {{ form_widget(form.binome, {'attr': {'class': 'w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition'}}) }}
+                        {{ form_errors(form.binome, {'attr': {'class': 'text-red-500 text-xs italic'}}) }}
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-8">
+                        <div>
+                            {{ form_label(form.pH4, null, {'label_attr': {'class': 'block text-sm font-bold text-gray-700 mb-2'}}) }}
+                            <div class="relative">
+                                {{ form_widget(form.pH4, {'attr': {'class': 'w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition', 'placeholder': '7.0'}}) }}
+                                <span class="absolute right-4 top-3 text-gray-400 text-sm">pH</span>
+                            </div>
+                            {{ form_errors(form.pH4, {'attr': {'class': 'text-red-500 text-xs italic'}}) }}
+                        </div>
+                        <div>
+                            {{ form_label(form.temperature, null, {'label_attr': {'class': 'block text-sm font-bold text-gray-700 mb-2'}}) }}
+                            <div class="relative">
+                                {{ form_widget(form.temperature, {'attr': {'class': 'w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition', 'placeholder': '25.0'}}) }}
+                                <span class="absolute right-4 top-3 text-gray-400 text-sm">°C</span>
+                            </div>
+                             {{ form_errors(form.temperature, {'attr': {'class': 'text-red-500 text-xs italic'}}) }}
+                        </div>
+
+                        <div>
+                            {{ form_label(form.CO2dissous, null, {'label_attr': {'class': 'block text-sm font-bold text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.CO2dissous, {'attr': {'class': 'w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition'}}) }}
+                            {{ form_errors(form.CO2dissous, {'attr': {'class': 'text-red-500 text-xs italic'}}) }}
+                        </div>
+                        <div>
+                            {{ form_label(form.gH, null, {'label_attr': {'class': 'block text-sm font-bold text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.gH, {'attr': {'class': 'w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition'}}) }}
+                            {{ form_errors(form.gH, {'attr': {'class': 'text-red-500 text-xs italic'}}) }}
+                        </div>
+                         <div>
+                            {{ form_label(form.kH, null, {'label_attr': {'class': 'block text-sm font-bold text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.kH, {'attr': {'class': 'w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition'}}) }}
+                            {{ form_errors(form.kH, {'attr': {'class': 'text-red-500 text-xs italic'}}) }}
+                        </div>
+                         <div>
+                            {{ form_label(form.chlore, null, {'label_attr': {'class': 'block text-sm font-bold text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.chlore, {'attr': {'class': 'w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition'}}) }}
+                            {{ form_errors(form.chlore, {'attr': {'class': 'text-red-500 text-xs italic'}}) }}
+                        </div>
+                         <div>
+                            {{ form_label(form.nitrite, null, {'label_attr': {'class': 'block text-sm font-bold text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.nitrite, {'attr': {'class': 'w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition'}}) }}
+                            {{ form_errors(form.nitrite, {'attr': {'class': 'text-red-500 text-xs italic'}}) }}
+                        </div>
+                         <div>
+                            {{ form_label(form.nitrate, null, {'label_attr': {'class': 'block text-sm font-bold text-gray-700 mb-2'}}) }}
+                            {{ form_widget(form.nitrate, {'attr': {'class': 'w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition'}}) }}
+                            {{ form_errors(form.nitrate, {'attr': {'class': 'text-red-500 text-xs italic'}}) }}
+                        </div>
+                    </div>
+                    
+                    <div class="hidden">
+                         {{ form_widget(form.remarque) }}
+                    </div>
+
+                    <div class="pt-4 flex gap-4">
+                        <button type="button" onclick="app.showView('home')" class="flex-1 border border-gray-300 text-gray-600 font-bold py-3 rounded-xl hover:bg-gray-100 transition">Annuler</button>
+                        <button type="submit" class="flex-1 bg-brand-orange text-white font-bold py-3 rounded-xl hover:bg-orange-600 shadow-lg hover:shadow-xl transition transform hover:-translate-y-0.5">Enregistrer</button>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const app = {
+            data: {
+                readings: []
+            },
+            init: function() {
+                // Load data
+                const stored = localStorage.getItem('fishManagerData');
+                if (stored) {
+                    this.data.readings = JSON.parse(stored);
+                } else {
+                    // Default dummy data if empty
+                    this.data.readings = [
+                        { date: '2025-11-01', ph: 7.0, temp: 24.5 },
+                        { date: '2025-11-05', ph: 7.2, temp: 25.0 }
+                    ];
+                }
+
+                // Event Listeners
+                // Event Listeners
+                // Removed manual form submission listener as it is now handled by Symfony form
+
+
+                // Set default date to today
+                // Set default date to today - logic removed as it should be handled by form default or JS on the new input ID if needed
+                // But Symfony DateType usually handles values. If we want default today in JS:
+                // document.getElementById('releve_date').valueAsDate = new Date(); // ID auto-generated by Symfony usually `releve_date`
+                
+                // Add event listeners for navigation logic (Home/Relevé is handled directly in HTML)
+                document.getElementById('nav-btn-home').addEventListener('click', (e) => { e.preventDefault(); this.showView('home'); });
+                document.getElementById('nav-btn-releve').addEventListener('click', (e) => { e.preventDefault(); this.showView('releve'); });
+
+                // Initial Render
+                this.renderCharts();
+            },
+
+            showView: function(viewName) {
+                const homeView = document.getElementById('view-home');
+                const releveView = document.getElementById('view-releve');
+
+                if (viewName === 'home') {
+                    homeView.classList.remove('hidden');
+                    releveView.classList.add('hidden');
+                    // Reset grid on main by just showing the home view which has the grid
+                } else {
+                    homeView.classList.add('hidden');
+                    releveView.classList.remove('hidden');
+                }
+            },
+
+            saveReading: function() {
+                const date = document.getElementById('input-date').value;
+                const ph = parseFloat(document.getElementById('input-ph').value);
+                const temp = parseFloat(document.getElementById('input-temp').value);
+
+                if (date && !isNaN(ph) && !isNaN(temp)) {
+                    this.data.readings.push({ date, ph, temp });
+                    // Sort by date
+                    this.data.readings.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    
+                    localStorage.setItem('fishManagerData', JSON.stringify(this.data.readings));
+                    
+                    // Reset inputs
+                    document.getElementById('input-ph').value = '';
+                    document.getElementById('input-temp').value = '';
+                    alert('Relevé enregistré !');
+                }
+            },
+
+            switchTab: function(tab) {
+                // Update Tab Styles
+                ['durete', 'ph', 'temp'].forEach(t => {
+                    const el = document.getElementById('tab-' + t);
+                    if (t === tab) {
+                        el.classList.remove('bg-white', 'text-brand-orange');
+                        el.classList.add('bg-brand-orange', 'text-white'); // Active state (conceptually, though HTML structure makes it tricky to swap fully, we'll simplify)
+                        
+                        // Actually, the original design has fixed colors. 
+                        // Let's just update the content area.
+                    } 
+                    // Note: The original CSS relies on specific classes for the active tab (white bg, colored text). 
+                    // Non-active are colored bg, white text.
+                    if (t === tab) {
+                       el.className = "bg-white px-4 py-2 rounded-t-lg text-brand-orange font-bold text-sm border-t border-l border-r border-gray-200 flex items-center gap-2 cursor-pointer transition-colors";
+                    } else {
+                       el.className = "px-4 py-2 text-white font-medium text-sm bg-brand-orange hover:bg-orange-600 cursor-pointer rounded-t-lg flex items-center gap-2 transition-colors";
+                    }
+                });
+
+                // Toggle Chart Visibility
+                document.getElementById('waterChart').style.display = (tab === 'durete') ? 'block' : 'none';
+                document.getElementById('chart-ph').classList.toggle('hidden', tab !== 'ph');
+                document.getElementById('chart-temp').classList.toggle('hidden', tab !== 'temp');
+
+                // Update Legend
+                const legend = document.getElementById('chart-legend');
+                if (tab === 'durete') {
+                    legend.innerHTML = `
+                        <div class="flex items-center gap-1"><span class="w-4 h-1 bg-green-500 rounded-full"></span> GH</div>
+                        <div class="flex items-center gap-1"><span class="w-4 h-1 bg-orange-500 rounded-full"></span> KH</div>
+                    `;
+                } else if (tab === 'ph') {
+                    legend.innerHTML = `
+                        <div class="flex items-center gap-1"><span class="w-4 h-1 bg-red-500 rounded-full"></span> pH</div>
+                    `;
+                    this.drawD3Chart('chart-ph', 'ph', '#ef4444');
+                } else if (tab === 'temp') {
+                    legend.innerHTML = `
+                        <div class="flex items-center gap-1"><span class="w-4 h-1 bg-orange-500 rounded-full"></span> Température (°C)</div>
+                    `;
+                    this.drawD3Chart('chart-temp', 'temp', '#f97316');
+                }
+            },
+
+            drawD3Chart: function(containerId, metric, color) {
+                const container = document.getElementById(containerId);
+                container.innerHTML = ''; // Clear previous
+
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+                const margin = {top: 20, right: 20, bottom: 30, left: 40};
+
+                const svg = d3.select("#" + containerId)
+                    .append("svg")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .append("g")
+                    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+                const chartWidth = width - margin.left - margin.right;
+                const chartHeight = height - margin.top - margin.bottom;
+
+                // Parse dates
+                const parseDate = d3.timeParse("%Y-%m-%d");
+                const data = this.data.readings.map(d => ({
+                    date: parseDate(d.date),
+                    value: d[metric]
+                }));
+
+                // Scales
+                const x = d3.scaleTime()
+                    .domain(d3.extent(data, d => d.date))
+                    .range([0, chartWidth]);
+
+                const y = d3.scaleLinear()
+                    .domain([
+                        d3.min(data, d => d.value) * 0.9, 
+                        d3.max(data, d => d.value) * 1.1
+                    ])
+                    .range([chartHeight, 0]);
+
+                // --- NEW: Threshold Zones ---
+                let zones = [];
+                if (metric === 'temp') {
+                     zones = [
+                        { min: -Infinity, max: 22, color: 'rgba(239, 68, 68, 0.2)' }, // Red < 22
+                        { min: 22, max: 24, color: 'rgba(234, 179, 8, 0.2)' },      // Yellow 22-24
+                        { min: 24, max: 26, color: 'rgba(34, 197, 94, 0.2)' },      // Green 24-26
+                        { min: 26, max: 28, color: 'rgba(234, 179, 8, 0.2)' },      // Yellow 26-28
+                        { min: 28, max: Infinity, color: 'rgba(239, 68, 68, 0.2)' } // Red > 28
+                     ];
+                } else if (metric === 'ph') {
+                     zones = [
+                        { min: -Infinity, max: 6.0, color: 'rgba(239, 68, 68, 0.15)' },
+                        { min: 6.0, max: 6.5, color: 'rgba(234, 179, 8, 0.15)' },
+                        { min: 6.5, max: 7.5, color: 'rgba(34, 197, 94, 0.15)' },
+                        { min: 7.5, max: 8.0, color: 'rgba(234, 179, 8, 0.15)' },
+                        { min: 8.0, max: Infinity, color: 'rgba(239, 68, 68, 0.15)' }
+                     ];
+                }
+
+                // Add zones to background
+                zones.forEach(z => {
+                    const yDomain = y.domain();
+                    const minVal = Math.max(z.min, yDomain[0]);
+                    const maxVal = Math.min(z.max, yDomain[1]);
+                    
+                    if (minVal < maxVal) {
+                        svg.append("rect")
+                            .attr("x", 0)
+                            .attr("width", chartWidth)
+                            .attr("y", y(maxVal))
+                            .attr("height", y(minVal) - y(maxVal))
+                            .attr("fill", z.color)
+                            .style("pointer-events", "none");
+                    }
+                });
+                // -----------------------------
+
+                // Axes
+                svg.append("g")
+                    .attr("transform", `translate(0,${chartHeight})`)
+                    .call(d3.axisBottom(x).ticks(5).tickFormat(d3.timeFormat("%d/%m")))
+                    .attr("color", "#9ca3af");
+
+                svg.append("g")
+                    .call(d3.axisLeft(y).ticks(5))
+                    .attr("color", "#9ca3af");
+
+                // Line
+                const line = d3.line()
+                    .x(d => x(d.date))
+                    .y(d => y(d.value))
+                    .curve(d3.curveMonotoneX);
+
+                svg.append("path")
+                    .datum(data)
+                    .attr("fill", "none")
+                    .attr("stroke", color)
+                    .attr("stroke-width", 3)
+                    .attr("d", line);
+
+                // Dots
+                svg.selectAll(".dot")
+                    .data(data)
+                    .enter().append("circle")
+                    .attr("class", "dot")
+                    .attr("cx", d => x(d.date))
+                    .attr("cy", d => y(d.value))
+                    .attr("r", 5)
+                    .attr("fill", "white")
+                    .attr("stroke", color)
+                    .attr("stroke-width", 2);
+            },
+            
+            renderCharts: function() {
+                // Re-init existing Chart.js for Dureté (static for now as per user request to only touch Relevé parts, 
+                // but we need to make sure it still works)
+                // We destroyed the ctx reference by replacing the script, so we need to rebuild it if we want it to work.
+                // However, the 'waterChart' canvas is still there. 
+                // We'll just re-instantiate it here.
+                const ctx = document.getElementById('waterChart').getContext('2d');
+                if (window.myWaterChart) window.myWaterChart.destroy();
+                
+                window.myWaterChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['1', '5', '10', '15', '20', '25', '30'],
+                        datasets: [
+                            { label: 'GH', data: [5, 7, 8, 9, 10, 11, 12], borderColor: '#4ade80', backgroundColor: '#4ade80', tension: 0, pointRadius: 4, pointBackgroundColor: 'white', pointBorderWidth: 2 },
+                            { label: 'KH', data: [2, 3, 5, 7, 6, 5, 6], borderColor: '#f97316', backgroundColor: '#f97316', tension: 0, pointRadius: 4, pointBackgroundColor: 'white', pointBorderWidth: 2 },
+                             { label: 'Autre', data: [1, 2, 3, 4, 3, 5, 7], borderColor: '#60a5fa', backgroundColor: '#60a5fa', tension: 0, pointRadius: 4, pointBackgroundColor: 'white', pointBorderWidth: 2 }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false, beginAtZero: true }, x: { grid: { display: true, color: '#e5e7eb' } } } }
+                });
+            }
+        };
+
+        // Start App
+        document.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
+    </script>
+
+    <script>
+        const container = document.getElementById('fish-container');
+
+        function createFish() {
+            const fish = document.createElement('div');
+            fish.classList.add('fish');
+
+            // 1. Position Verticale aléatoire (entre 5% et 95% de la hauteur)
+            const topPosition = Math.random() * 90 + 5;
+            fish.style.top = topPosition + '%';
+
+            // 2. Taille aléatoire (effet de profondeur)
+            const scale = Math.random() * 0.8 + 0.5; // Entre 0.5 et 1.3
+            // fish.style.transform = `scale(${scale})`; // <-- SUPPRIMÉ car écrase la direction
+            
+            // 3. Vitesse (durée de traversée)
+            const duration = (Math.random() * 10 + 15) / scale; 
+            
+            // 4. Direction (Gauche vers Droite OU Droite vers Gauche)
+            const startRight = Math.random() > 0.5;
+            
+            if (startRight) {
+                // Part de la droite, nage vers la gauche
+                fish.style.left = '110%'; // Hors écran
+                fish.classList.add('swim-left'); 
+                fish.style.transform = `scale(${scale}) scaleX(1)`; // Normal (regarde à gauche)
+
+                const animation = fish.animate([
+                    { left: '110%' },
+                    { left: '-10%' }
+                ], {
+                    duration: duration * 1000,
+                    easing: 'linear',
+                    iterations: 1
+                });
+                animation.onfinish = () => fish.remove();
+
+            } else {
+                // Part de la gauche, nage vers la droite
+                fish.style.left = '-10%'; // Hors écran
+                fish.classList.add('swim-right');
+                fish.style.transform = `scale(${scale}) scaleX(-1)`; // Miroir (regarde à droite)
+                
+                const animation = fish.animate([
+                    { left: '-10%' },
+                    { left: '110%' }
+                ], {
+                    duration: duration * 1000,
+                    easing: 'linear',
+                    iterations: 1
+                });
+                animation.onfinish = () => fish.remove();
+            }
+
+            container.appendChild(fish);
+        }
+
+        // Créer un poisson toutes les X millisecondes
+        setInterval(createFish, 2000);
+
+        // Créer quelques poissons au démarrage pour ne pas attendre
+        for(let i=0; i<5; i++) {
+            setTimeout(createFish, i * 500); 
+        }
+    </script>
+</body>
+</html>
