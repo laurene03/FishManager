@@ -32,5 +32,10 @@ final class ReleveController extends AbstractController
         return $this->render('releve/fishmanager.html.twig', [
             'form' => $form->createView(),
         ]);
+
+
+        $this->addFlash("success", "Votre relevé a été enregistré avec succès !");
+        $this->addFlash("error", "Une erreur est survenue lors de l'enregistrement du relevé.");
+
     }
 }

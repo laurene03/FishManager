@@ -7,11 +7,6 @@
 }
 
 
-body {
-    background-color: var(--color-light-blue);
-}
-
-
 h1 {
     text-align: center;
     margin-top: 150px;
@@ -25,3 +20,40 @@ h1 {
     width: 500px;
     height: auto;
 }
+
+body {
+            background: linear-gradient(135deg, #005aa7 0%, #002855 100%);
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- STYLE DES POISSONS --- */
+        #fish-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Permet de cliquer à travers les poissons */
+            z-index: 1; /* Niveau 1 : Au-dessus du fond */
+            overflow: hidden;
+        }
+
+        .fish {
+            position: absolute;
+            width: 27px;
+            height: 23px;
+            background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABsAAAC4CAIAAACdPgBCAAAABGdBTUEAAK/INwWK6QAAAAZ0Uk5TAAAAAAAAbqYHkQAAAAZiS0dEAAAAAAAA+UO7fwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAvxJREFUeNrtmb9LHEEUxwcTkSCxEAKxCXZWpomCBklhI5IgBEJQkSMWhxZyFgbsAiEi2GhzFkpAS9ughMD1ooVCuqRIF/I/RITx7b7duf0xv3Z2jlPvPR54t7fzYe7W3Q9fHmP3qo7XBv9t9V98GthfHlp6O1qKxS+7+dEjfzgeEXm9tyxxvdoV4eyI/7/9NLF4YoMm4lX9VEls4nB38Qb558e81ofQAsTGwQP+62GKFW9QQ7yufU8TYT/4F1gCkWQhDnrlKa+OAzR16YZ+5IgCh4vrvV/7n2E3WYjLEf/OzsuJvNEjVgagsM7Oz4PXeLzWh7igP8xEqxYqAXHkMEv8Mj0dfLD0HBsoO2y3whYjYnw8woXEoBcqETG/x+AzXBOeBBTATbBXETE8GDSCRKtwuMc/H9/hMngBLX5HfCs+zbcSOjc5KRbru7E1Bb138LL5O6quNUDhPFygaTinuv3CfK31XDiCDaz3q2OZJQYilkAkW4pT3DOyws1Cr58MI+v17ITmfDMRC3CeiYWgtsS7U/BMBBf6MRcLvfp744k3XDkRxg/z5AFvam3ivBCzOkzbdf6N5F60kLVarXmi7oaxsWuGqHtMWNo142sl0c2ualk72VWuVlbCrmr9u9pV+ZWd7WoQoYNdDSJ0s6tZhPDoL2pXswgR6lmtLFZ229TK7EVoTyxQLYGyUF5+tCVw3kTIYhf6Uyv3SkyaSxDLuTCtGs02Df+MEhfG5pK60HDDFHWh4aa2cWEmu5rUWtCFuoejgwuVImSuLtQpwdGFmq/s5kKztoq60DER6l1olQgXN0ekFJW/rLQFUHsX2oqQxS70nwg9ixCqJc5qCbQl5Tka3qqkmcdR0qSkKVZR0kzukZImJc0OT5p3p2hQKj2/4wel4iL4GZQm5640KKVBKQ1KFUWD0jbVfR6U5nFl1ZoevVJ8pfhK8ZXiq/IupPhK8dVz0TC3NI6GuTTMpWEuDXOlUBrmdvIwl9JwaRylYUrDlIYpDauglIbbmYZvACQnkZaK+XLSAAAARXpUWHRTb2Z0d2FyZQAAeNpz0FDW9MxNTE/1TUzPTM5WMNEz0DNVsLTQNzDVNzBUSC7KLC6pdCiuzC1ILMlMztfLL0oHAHyiD/vAl2ahAAAAM3pUWHRTaWduYXR1cmUAAHjas0hOS0lOMjC2NDKwTDEwsjBMNDdLTTKysEy2NExKMTcBAJQkCMet5Z9AAAAAAElFTkSuQmCC);
+            /* Animation du sprite (nageoires qui bougent) */
+            animation: swimSprite 0.8s steps(8) infinite; 
+        }
+
+        /* Animation des nageoires */
+        @keyframes swimSprite {
+            100% { background-position: 0px -184px; }
+        }
+
+        /* CORRECTION ICI : Inversion des transformations */
+        .swim-left { transform: scaleX(-1); } /* Miroir : Poisson regarde à gauche */
+        .swim-right { transform: scaleX(1); } /* Normal : Poisson regarde à droite */

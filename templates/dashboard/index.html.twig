@@ -1,0 +1,116 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}FishManager{% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
+{% endblock %}
+{% block javascripts %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-orange': '#D95D39',
+                        'brand-bg': '#003B73',
+                    },
+                    fontFamily: {
+                        sans: ['Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+{% endblock %}
+
+
+
+
+
+
+{% block body %}
+
+<div id="fish-container"></div>
+
+<div class="example-wrapper">
+    <h1>Hello {{ controller_name }}! ✅</h1>
+
+    This friendly message is coming from:
+    <ul>
+        <li>Your controller at <code>C:/Users/laure/Documents/BUT 2/dev_back/FishManager/src/Controller/DashboardController.php</code></li>
+        <li>Your template at <code>C:/Users/laure/Documents/BUT 2/dev_back/FishManager/templates/dashboard/index.html.twig</code></li>
+    </ul>
+</div>
+{% endblock %}
+
+{% block jsbottom %}
+    <script>
+        const container = document.getElementById('fish-container');
+
+        function createFish() {
+            const fish = document.createElement('div');
+            fish.classList.add('fish');
+
+            // 1. Position Verticale aléatoire (entre 5% et 95% de la hauteur)
+            const topPosition = Math.random() * 90 + 5;
+            fish.style.top = topPosition + '%';
+
+            // 2. Taille aléatoire (effet de profondeur)
+            const scale = Math.random() * 0.8 + 0.5; // Entre 0.5 et 1.3
+            // fish.style.transform = `scale(${scale})`; // <-- SUPPRIMÉ car écrase la direction
+            
+            // 3. Vitesse (durée de traversée)
+            const duration = (Math.random() * 10 + 15) / scale; 
+            
+            // 4. Direction (Gauche vers Droite OU Droite vers Gauche)
+            const startRight = Math.random() > 0.5;
+            
+            if (startRight) {
+                // Part de la droite, nage vers la gauche
+                fish.style.left = '110%'; // Hors écran
+                fish.classList.add('swim-left'); 
+                fish.style.transform = `scale(${scale}) scaleX(1)`; // Normal (regarde à gauche)
+
+                const animation = fish.animate([
+                    { left: '110%' },
+                    { left: '-10%' }
+                ], {
+                    duration: duration * 1000,
+                    easing: 'linear',
+                    iterations: 1
+                });
+                animation.onfinish = () => fish.remove();
+
+            } else {
+                // Part de la gauche, nage vers la droite
+                fish.style.left = '-10%'; // Hors écran
+                fish.classList.add('swim-right');
+                fish.style.transform = `scale(${scale}) scaleX(-1)`; // Miroir (regarde à droite)
+                
+                const animation = fish.animate([
+                    { left: '-10%' },
+                    { left: '110%' }
+                ], {
+                    duration: duration * 1000,
+                    easing: 'linear',
+                    iterations: 1
+                });
+                animation.onfinish = () => fish.remove();
+            }
+
+            container.appendChild(fish);
+        }
+
+        // Créer un poisson toutes les X millisecondes
+        setInterval(createFish, 2000);
+
+        // Créer quelques poissons au démarrage pour ne pas attendre
+        for(let i=0; i<5; i++) {
+            setTimeout(createFish, i * 500); 
+        }
+    </script>
+{% endblock %}
