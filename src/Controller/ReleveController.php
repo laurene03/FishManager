@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class ReleveController extends AbstractController
 {
-    #[Route('/', name: 'homepage')]
+    #[Route('/releve', name: 'releve_index')]
     public function index(ReleveRepository $releveRepository, Request $request, EntityManagerInterface $entityManager): Response
     {
         $releve = new Releve();
@@ -26,10 +26,10 @@ final class ReleveController extends AbstractController
 
             $this->addFlash('success', 'Relevé enregistré avec succès !');
 
-            return $this->redirectToRoute('homepage');
+            return $this->redirectToRoute('releve_index');
         }
 
-        return $this->render('releve/fishmanager.html.twig', [
+        return $this->render('releve/index.html.twig', [
             'form' => $form->createView(),
         ]);
 
