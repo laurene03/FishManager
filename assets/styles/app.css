@@ -292,6 +292,194 @@ body {
 }
 
 
+/* --- STYLE DE LA PAGE DE PROFIL --- */
+
+.profile-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-back-container {
+            width: 100%;
+            max-width: 650px;
+            margin-bottom: 1rem;
+        }
+
+        .profile-card {
+            width: min(100%, 650px);
+            background: #fff;
+            border-radius: 2rem;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.2);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            z-index: 2;
+            position: relative;
+            padding: 2.5rem;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            background: #d1d5db;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #9ca3af;
+        }
+
+        .profile-name {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .profile-sections {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .profile-section {
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            padding: 1.25rem;
+            background: #f9fafb;
+        }
+
+        .profile-section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin: 0 0 0.75rem 0;
+        }
+
+        .profile-section-title i {
+            font-size: 1rem;
+            color: #9ca3af;
+        }
+
+        .section-content {
+            font-size: 0.95rem;
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        .date-range {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        .date-range .date {
+            font-weight: 600;
+        }
+
+        .section-actions {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-action-primary {
+            background: #ec6b34;
+            color: #fff;
+        }
+
+        .btn-action-primary:hover {
+            background: #d45a27;
+            transform: translateY(-2px);
+        }
+
+        .btn-action-secondary {
+            background: #d1d5db;
+            color: #374151;
+        }
+
+        .btn-action-secondary:hover {
+            background: #9ca3af;
+        }
+
+        .todo-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            color: #1f2937;
+        }
+
+        .todo-checkbox {
+            width: 1.2rem;
+            height: 1.2rem;
+            cursor: pointer;
+        }
+
+        .empty-message {
+            color: #9ca3af;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            color: #7dc1f8;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s ease;
+        }
+
+        .back-button:hover {
+            color: #01144f;
+        }
+
+
+
+
+
 
 
 
