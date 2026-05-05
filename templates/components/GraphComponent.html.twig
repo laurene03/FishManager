@@ -1,4 +1,50 @@
-<div{{ attributes }}>
-    {{ render_chart(showChartWeek) }}
+<div {{ attributes }}>
+    <div class="filters-row">
+        <button class="filter-pill {% if activeFilter == 'hardness' %}active{% endif %}" 
+                type="button"
+                data-action="click->live#action"
+                data-live-action-param="filterHardness">
+            Dureté
+        </button>
+        <button class="filter-pill {% if activeFilter == 'pH' %}active{% endif %}" 
+                type="button"
+                data-action="click->live#action"
+                data-live-action-param="filterPH">
+            pH
+        </button>
+        <button class="filter-pill {% if activeFilter == 'temperature' %}active{% endif %}" 
+                type="button"
+                data-action="click->live#action"
+                data-live-action-param="filterTemperature">
+            Température
+        </button>
+        <button class="filter-pill {% if activeFilter == 'CO2' %}active{% endif %}" 
+                type="button"
+                data-action="click->live#action"
+                data-live-action-param="filterCO2">
+            CO2
+        </button>
+        <button class="filter-pill {% if activeFilter == 'nitrogen' %}active{% endif %}" 
+                type="button"
+                data-action="click->live#action"
+                data-live-action-param="filterNitrogen">
+            Azote
+        </button>
+    </div>
+
+    <div class="graph-wrapper">
+        {{ render_chart(this.getChart()) }}
+    </div>
+    
+    <div class="period-selector">
+        <label for="period" class="sr-only">Période</label>
+        <select id="period" 
+                class="select-period" 
+                data-model="period">
+            <option value="month">Ce mois</option>
+            <option value="quarter">Ce trimestre</option>
+            <option value="year">Cette année</option>
+        </select>
+    </div>
 </div>
 

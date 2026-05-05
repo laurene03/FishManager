@@ -5,4 +5,5 @@ const app = startStimulusApp();
 // app.register('some_controller_name', SomeImportedController);
 
 // Import UX controllers
-import '@symfony/ux-chartjs/dist/controller/chart_controller.js';
+import '@symfony/ux-chartjs';
+import '@symfony/ux-live-component';
